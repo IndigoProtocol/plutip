@@ -11,7 +11,7 @@ module Types (
   PlutipServerError (PlutipServerError),
   PrivateKey,
   ServerOptions (ServerOptions, nodeLogs, port),
-  StartClusterRequest (StartClusterRequest, keysToGenerate, slotLength, epochSize),
+  StartClusterRequest (StartClusterRequest, keysToGenerate, slotLength, epochSize, systemStartOverride),
   StartClusterResponse (
     ClusterStartupSuccess,
     ClusterStartupFailure
@@ -42,6 +42,7 @@ import Test.Plutip.Internal.BotPlutusInterface.Wallet (BpiWallet)
 import Test.Plutip.Internal.LocalCluster (ClusterStatus)
 import Test.Plutip.Internal.Types (ClusterEnv)
 import UnliftIO.STM (TVar)
+import Data.Time.Clock.POSIX (POSIXTime)
 
 -- TVar is used for signaling by 'startCluster'/'stopCluster' (STM is used
 -- for blocking).
@@ -95,6 +96,7 @@ instance FromJSON Lovelace where
 data StartClusterRequest = StartClusterRequest
   { slotLength :: NominalDiffTime
   , epochSize :: EpochSize
+  , systemStartOverride :: Maybe POSIXTime
   , -- | Lovelace amounts for each UTXO of each wallet
     keysToGenerate :: [[Lovelace]]
   }

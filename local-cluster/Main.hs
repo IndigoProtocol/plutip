@@ -46,6 +46,7 @@ import Test.Plutip.Internal.LocalCluster (
  )
 import Test.Plutip.Internal.Types (nodeSocket)
 import Test.Plutip.Tools.CardanoApi (awaitAddressFunded)
+import Data.Time.Clock.POSIX (POSIXTime)
 
 main :: IO ()
 main = do
@@ -53,10 +54,10 @@ main = do
   case totalAmount config of
     Left e -> error e
     Right amt -> do
-      let ClusterConfig {numWallets, dirWallets, numUtxos, workDir, slotLength, epochSize, cIndexMode} = config
+      let ClusterConfig {numWallets, dirWallets, numUtxos, workDir, slotLength, epochSize, cIndexMode, systemStartOverride} = config
           workingDir = maybe Temporary (`Fixed` False) workDir
 
-          extraConf = ExtraConfig slotLength epochSize
+          extraConf = ExtraConfig slotLength epochSize systemStartOverride
           plutipConfig = def {clusterWorkingDir = workingDir, extraConfig = extraConf, chainIndexMode = cIndexMode}
 
       putStrLn "Starting cluster..."
@@ -249,6 +250,16 @@ pInfoJson =
           <> Options.value "local-cluster-info.json"
       )
 
+pSysStartOverride :: Parser (Maybe POSIXTime)
+pSysStartOverride =
+  Options.option
+    Options.auto
+    ( Options.long "slot-len"
+        <> Options.short 's'
+        <> Options.metavar "SLOT_LEN"
+        <> Options.value Nothing
+    )
+
 pClusterConfig :: Parser ClusterConfig
 pClusterConfig =
   ClusterConfig
@@ -262,6 +273,7 @@ pClusterConfig =
     <*> pEpochSize
     <*> pChainIndexMode
     <*> pInfoJson
+    <*> pSysStartOverride
 
 -- | Basic info about the cluster, to
 -- be used by the command-line
@@ -276,5 +288,6 @@ data ClusterConfig = ClusterConfig
   , epochSize :: EpochSize
   , cIndexMode :: ChainIndexMode
   , dumpInfo :: Maybe FilePath
+  , systemStartOverride :: Maybe POSIXTime
   }
   deriving stock (Show, Eq)

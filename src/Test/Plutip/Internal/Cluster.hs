@@ -270,7 +270,7 @@ import qualified Data.Text.Encoding.Error as T
 import qualified Data.Yaml as Yaml
 
 import Data.Default (def)
-import Test.Plutip.Internal.Cluster.Extra.Types (ExtraConfig, ecSlotLength, ecEpochSize)
+import Test.Plutip.Internal.Cluster.Extra.Types (ExtraConfig (ecSystemStartOverride), ecSlotLength, ecEpochSize)
 
 -- | Returns the shelley test data path, which is usually relative to the
 -- package sources, but can be overridden by the @SHELLEY_TEST_DATA@ environment
@@ -899,7 +899,7 @@ generateGenesis dir systemStart initialFunds addPoolsToGenesis extraConf = do
     Yaml.decodeFileThrow @_ @Aeson.Value (source </> "alonzo-genesis.yaml")
         >>= Aeson.encodeFile (dir </> "genesis.alonzo.json")
 
-    let startTime = round @_ @Int . utcTimeToPOSIXSeconds $ systemStart
+    let startTime = round @_ @Int $ fromMaybe (utcTimeToPOSIXSeconds systemStart) (ecSystemStartOverride extraConf)
     let systemStart' = posixSecondsToUTCTime . fromRational . toRational $ startTime
 
     let pparams = Ledger.PParams

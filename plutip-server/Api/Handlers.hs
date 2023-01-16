@@ -63,7 +63,7 @@ import Types (
     StartClusterRequest,
     epochSize,
     keysToGenerate,
-    slotLength
+    slotLength, systemStartOverride
   ),
   StartClusterResponse (
     ClusterStartupFailure,
@@ -77,7 +77,7 @@ import UnliftIO.Exception (throwString)
 startClusterHandler :: ServerOptions -> StartClusterRequest -> AppM StartClusterResponse
 startClusterHandler
   ServerOptions {nodeLogs}
-  StartClusterRequest {slotLength, epochSize, keysToGenerate} = interpret $ do
+  StartClusterRequest {slotLength, epochSize, keysToGenerate, systemStartOverride} = interpret $ do
     -- Check that lovelace amounts are positive
     for_ keysToGenerate $ \lovelaceAmounts -> do
       for_ lovelaceAmounts $ \lovelaces -> do
@@ -86,7 +86,7 @@ startClusterHandler
     statusMVar <- asks status
     isClusterDown <- liftIO $ isEmptyMVar statusMVar
     unless isClusterDown $ throwError ClusterIsRunningAlready
-    let extraConf = ExtraConfig slotLength epochSize
+    let extraConf = ExtraConfig slotLength epochSize systemStartOverride
         cfg = def {relayNodeLogs = nodeLogs, chainIndexMode = NotNeeded, extraConfig = extraConf}
 
     (statusTVar, (clusterEnv, wallets)) <- liftIO $ startCluster cfg setup
