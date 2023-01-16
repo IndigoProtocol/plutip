@@ -254,9 +254,8 @@ pSysStartOverride :: Parser (Maybe POSIXTime)
 pSysStartOverride =
   Options.option
     Options.auto
-    ( Options.long "slot-len"
-        <> Options.short 's'
-        <> Options.metavar "SLOT_LEN"
+    ( Options.long "sys-start"
+        <> Options.metavar "SYS_START"
         <> Options.value Nothing
     )
 
